@@ -1,16 +1,25 @@
 package net.amarszalek.reactivekotlin
 
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.beans.factory.annotation.Autowired
 
-@RunWith(SpringRunner::class)
-@SpringBootTest
-class ReactivekotlinApplicationTests {
+/**
+ * If you want to read my story about writing integration tests for WebFlux in Kotlin
+ * visit: https://amarszalek.net/blog/2018/04/11/rant-integration-tests-spring-webflux-kotlin/
+ */
+class ReactivekotlinApplicationTests : TestBase() {
 
-	@Test
-	fun contextLoads() {
-	}
+    @Autowired
+    private lateinit var repository: BookRepository
 
+    @Test
+    fun `Get book by Title`() {
+        val bookTitle = "Title5"
+        repository.save(Book(title = bookTitle, author = "Author"))
+
+        client.get().uri("/books/{title}", bookTitle)
+                .exchange().expectStatus().isOk
+                .expectBody()
+                .jsonPath("$.title").isEqualTo(bookTitle)
+    }
 }
